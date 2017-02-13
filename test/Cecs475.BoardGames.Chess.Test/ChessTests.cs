@@ -57,7 +57,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 		/// <returns></returns>
 		private static ChessBoard CreateBoardWithPositions(params object[] positions) {
 			var p = new List<Tuple<BoardPosition, ChessPiecePosition>>();
-			for (int i = 0; i < positions.Length; i+=3) {
+			for (int i = 0; i < positions.Length; i += 3) {
 				p.Add(Tuple.Create((BoardPosition)positions[i],
 					new ChessPiecePosition(
 						(ChessPieceType)positions[i + 1],
@@ -96,6 +96,21 @@ namespace Cecs475.BoardGames.Chess.Test {
 		/// </summary>
 		private static IEnumerable<ChessMove> GetMovesAtPosition(IEnumerable<ChessMove> moves, BoardPosition pos) {
 			return moves.Where(m => m.StartPosition.Equals(pos));
+		}
+
+		/// <summary>
+		/// Returns all chess piece positions controlled by the given player
+		/// </summary>
+		private static IEnumerable<ChessPiecePosition> GetAllPiecesForPlayer(ChessBoard b, int player) {
+			return
+				from pos in (
+					from row in Enumerable.Range(0, 8)
+					from col in Enumerable.Range(0, 8)
+					select b.GetPieceAtPosition(new BoardPosition(row, col))
+				)
+				where pos.Player == player
+				select pos;
+
 		}
 	}
 }

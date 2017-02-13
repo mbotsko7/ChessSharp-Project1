@@ -155,7 +155,9 @@ namespace Cecs475.BoardGames.Chess {
 		 * Pawn: 1
 		 * Knight: 3
 		 * Bishop: 3
-		 * 
+		 * Rook: 5
+		 * Queen: 9
+		 * King: infinity (maximum integer value)
 		 */
 		public int GetPieceValue(ChessPieceType pieceType) {
 			// TODO: implement this method.
