@@ -21,6 +21,9 @@ namespace Cecs475.BoardGames.Chess {
 			{1, 1, 1, 1, 1, 1, 1, 1 },
 			{2, 4, 5, 6, 7, 5, 4, 3 }
 		};
+
+		private bool[,] Moved = new bool[8,8];
+		private List<BoardPosition> pawnMovedTwo = new List<BoardPosition>();
 		
 		// TODO:
 		// You need a way of keeping track of certain game state flags. For example, a rook cannot perform a castling move
@@ -99,7 +102,7 @@ namespace Cecs475.BoardGames.Chess {
 			foreach(BoardPosition position in positions){
 				ChessPiecePosition cpos = GetPieceAtPosition(position);
 				if(cpos.PieceType == ChessPieceType.Pawn)
-					possible.AddRange(PawnThreat(position));
+					possible.AddRange(PawnPossible(position) as ChessMove);
 				else if(cpos.PieceType == ChessPieceType.Knight){
 					possible.AddRange(KnightThreat(position));
 				}
@@ -118,6 +121,7 @@ namespace Cecs475.BoardGames.Chess {
 				else
 					possible.AddRange(KingThreat(position));
 			}
+			return possible;
 			
 		}
 
@@ -154,6 +158,26 @@ namespace Cecs475.BoardGames.Chess {
 			return threatened;
 		}
 
+		private List<BoardPosition> KingPossible(BoardPosition pos){
+			//implement king rules on checking and threats
+			List<BoardPosition> possible = new List<BoardPosition>();
+			int player = GetPlayerAtPosition(pos);
+			for(int r = -1; r < 2; r++){
+				for(int c = -1; c < 2;  c++){
+					if(r == 0 && c == 0)
+						continue;
+					else{
+						BoardPosition bp = new BoardPosition(r,c);
+						if(PositionInBounds(bp) && PositionIsEnemy(bp, player)){
+							possible.Add(bp);
+						}
+
+						
+					}
+				}
+			}
+			return possible;
+		}
 		private List<BoardPosition> KingThreat(BoardPosition pos){
 			//implement king rules on checking and threats
 			List<BoardPosition> threatened = new List<BoardPosition>();
@@ -347,7 +371,7 @@ namespace Cecs475.BoardGames.Chess {
 			return threatened;
 		}
 
-
+		//use array to check if they've moved
 		private List<BoardPosition> PawnPossible(BoardPosition position){
 			List<BoardPosition> possible = new List<BoardPosition>();
 			int player = GetPlayerAtPosition(position), truePlayer = player;
@@ -358,14 +382,19 @@ namespace Cecs475.BoardGames.Chess {
 			int r = position.Row+player;
 			BoardPosition p1 = new BoardPosition(r, position.Col - 1);
 			BoardPosition p2 = new BoardPosition(r, position.Col + 1);
+			BoardPosition forward = new BoardPosition(r, position.Col);
 			if(PositionInBounds(p1) && PositionIsEnemy(p1, truePlayer))
 				possible.Add(p1);
 			if(PositionInBounds(p2) && PositionIsEnemy(p2, truePlayer))
 				possible.Add(p2);
+			if(PositionInBounds(forward) && PositionIsEmpty(forward))
+				possible.Add(forward);
 			//TODO: implement en passant
 			return possible;
 		}		
 		private List<BoardPosition> PawnThreat(BoardPosition position){
+
+
 			List<BoardPosition> threatened = new List<BoardPosition>();
 			int player = GetPlayerAtPosition(position), truePlayer = player;
 			if(player == 2)
@@ -375,14 +404,31 @@ namespace Cecs475.BoardGames.Chess {
 			int r = position.Row+player;
 			BoardPosition p1 = new BoardPosition(r, position.Col - 1);
 			BoardPosition p2 = new BoardPosition(r, position.Col + 1);
+
 			if(PositionInBounds(p1) && PositionIsEnemy(p1, truePlayer))
 				threatened.Add(p1);
 			if(PositionInBounds(p2) && PositionIsEnemy(p2, truePlayer))
 				threatened.Add(p2);
-			//implement en passant
+			//implement en passant, possibly wrong about threatened square?
+			
 			return threatened;
 		}
 
+		private BoardPosition isPassant(BoardPosition position){
+			BoardPosition p3 = new BoardPosition(position.Row, position.Col-1);
+			BoardPosition p4 = new BoardPosition(position.Row, position.Col+1);			
+			int player = GetPlayerAtPosition(position), truePlayer = player;
+			if(player == 2)
+				player = -1;
+			else
+				player = 1;
+			int r = position.Row+player;
+			if(PositionInBounds(p3) && pawnMovedTwo.Contains(p3))
+				return p3;
+			else if(PositionInBounds(p4) && pawnMovedTwo.Contains(p4))
+				return p4;
+
+		}
 		private List<BoardPosition> GetPlayerPieces(int player){
 			List<BoardPosition> list = new List<BoardPosition>();
 			for(int i = 0; i < 8; i++){
