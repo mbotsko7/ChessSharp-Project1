@@ -11,16 +11,6 @@
       "dependencies": {
         "NETStandard.Library": "1.6.0"
       }
-    },
-    "net46": {
-      "buildOptions": {
-        "define": [ "NET46" ]
-      },
-      "frameworkAssemblies": {
-        "System.Linq": "4.0.0.0",
-        "System.Data.Entity": "4.0.0.0"
-      }
-
     }
   }
 }

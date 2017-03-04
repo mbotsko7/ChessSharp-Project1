@@ -31,6 +31,7 @@ namespace Cecs475.BoardGames.Chess {
 		King = 7
 	}
 
+
 	/// <summary>
 	/// Represents the owner and type of a piece at a particular position on the 
 	/// chess board.
