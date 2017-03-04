@@ -24,7 +24,7 @@ namespace Cecs475.BoardGames.Chess {
 
 		private bool[,] Moved = new bool[8,8];
 		private List<BoardPosition> pawnMovedTwo = new List<BoardPosition>();
-		
+		private bool first;
 		// TODO:
 		// You need a way of keeping track of certain game state flags. For example, a rook cannot perform a castling move
 		// if either the rook or its king has moved in the game, so you need a way of determining whether those things have 
@@ -36,7 +36,7 @@ namespace Cecs475.BoardGames.Chess {
 		/// </summary>
 		public ChessBoard() {
 			MoveHistory = new List<IGameMove>();
-
+			first = true;
 			// TODO:
 			// Finish any other one-time setup.
 		}
@@ -71,8 +71,7 @@ namespace Cecs475.BoardGames.Chess {
 		
 		public int CurrentPlayer {
 			get {
-				// TODO: implement the CurrentPlayer property.
-				throw new NotImplementedException();
+				return first == true ? 1 : 2;
 			}
 		}
 
@@ -92,8 +91,8 @@ namespace Cecs475.BoardGames.Chess {
 
 
 		public void ApplyMove(IGameMove move) {
-			// TODO: implement this method. 
-			throw new NotImplementedException();
+			ChessMove m = move as ChessMove;
+			
 		}
 
 		public IEnumerable<IGameMove> GetPossibleMoves() {
@@ -102,29 +101,42 @@ namespace Cecs475.BoardGames.Chess {
 			foreach(BoardPosition position in positions){
 				ChessPiecePosition cpos = GetPieceAtPosition(position);
 				if(cpos.PieceType == ChessPieceType.Pawn)
-					possible.AddRange(PawnPossible(position) as ChessMove);
+					possible.AddRange(convertMoveList(position, PawnThreat(position)));
 				else if(cpos.PieceType == ChessPieceType.Knight){
-					possible.AddRange(KnightThreat(position));
+					possible.AddRange(convertMoveList(position, KnightThreat(position)));
 				}
 				else if(cpos.PieceType == ChessPieceType.Bishop){
-					possible.AddRange(BishopThreat(position));
+					possible.AddRange(convertMoveList(position, BishopThreat(position)));
 				}
 				else if(cpos.PieceType == ChessPieceType.RookKing ||
 					cpos.PieceType == ChessPieceType.RookPawn ||
 					cpos.PieceType == ChessPieceType.RookQueen){
-						possible.AddRange(RookThreat(position));
+					possible.AddRange(convertMoveList(position, RookThreat(position)));
 					}
 				else if(cpos.PieceType == ChessPieceType.Queen){
-					possible.AddRange(RookThreat(position));
-					possible.AddRange(BishopThreat(position));
+					possible.AddRange(convertMoveList(position, RookThreat(position)));
+					possible.AddRange(convertMoveList(position, BishopThreat(position)));
 				}
 				else
-					possible.AddRange(KingThreat(position));
+					possible.AddRange(convertMoveList(position, KingThreat(position)));
+			}
+			for(int i = 0; i < possible.Count; i++){
+				if(EndangerKing(possible[i])){
+					possible.Remove(possible[i]);
+					i--;
+				}
 			}
 			return possible;
 			
 		}
 
+		private List<ChessMove> convertMoveList(BoardPosition bp, List<BoardPosition> l){
+			List<ChessMove> ret = new List<ChessMove>();
+			foreach(BoardPosition pos in l){
+				ret.Add(new ChessMove(bp, pos));
+			}
+			return ret;
+		}
 		/// <summary>
 		/// Gets a sequence of all positions on the board that are threatened by the given player. A king
 		/// may not move to a square threatened by the opponent.
@@ -158,24 +170,34 @@ namespace Cecs475.BoardGames.Chess {
 			return threatened;
 		}
 
-		private List<BoardPosition> KingPossible(BoardPosition pos){
-			//implement king rules on checking and threats
-			List<BoardPosition> possible = new List<BoardPosition>();
-			int player = GetPlayerAtPosition(pos);
-			for(int r = -1; r < 2; r++){
-				for(int c = -1; c < 2;  c++){
-					if(r == 0 && c == 0)
-						continue;
-					else{
-						BoardPosition bp = new BoardPosition(r,c);
-						if(PositionInBounds(bp) && PositionIsEnemy(bp, player)){
-							possible.Add(bp);
-						}
-
-						
+		private bool EndangerKing(ChessMove m){
+			int king = CurrentPlayer == 1 ? 7 : -7;
+			ApplyMove(m);
+			int kRow = -1, kCol = -1;
+			for(int r = 0; r < 8; r++){
+				for(int c = 0; c < 8; c++){
+					if(mBoard[r, c] == king){
+						kRow = r;
+						kCol = c;
+						goto Escape;
 					}
 				}
 			}
+			Escape:
+			List<BoardPosition> threat = (CurrentPlayer == 1 ? GetThreatenedPositions(2) : GetThreatenedPositions(1)) as List<BoardPosition>;
+			UndoLastMove();
+			return threat.Contains(new BoardPosition(kRow, kCol));
+		}
+		private List<BoardPosition> KingPossible(BoardPosition pos){
+			List<BoardPosition> possible = new List<BoardPosition>();
+			possible = KingThreat(pos);
+			for(int i = 0; i < possible.Count; i++){
+				if(!PositionIsEnemy(possible[i], GetPlayerAtPosition(possible[i])) && !PositionIsEmpty(possible[i])){
+					possible.Remove(possible[i]);
+					i--;
+				}
+			}
+			
 			return possible;
 		}
 		private List<BoardPosition> KingThreat(BoardPosition pos){
@@ -188,7 +210,7 @@ namespace Cecs475.BoardGames.Chess {
 						continue;
 					else{
 						BoardPosition bp = new BoardPosition(r,c);
-						if(PositionInBounds(bp) && PositionIsEnemy(bp, player)){
+						if(PositionInBounds(bp)){
 							threatened.Add(bp);
 						}
 
@@ -201,38 +223,16 @@ namespace Cecs475.BoardGames.Chess {
 
 		private List<BoardPosition> RookPossible(BoardPosition pos){
 			List<BoardPosition> possible = new List<BoardPosition>();
-			int player = GetPlayerAtPosition(pos);
-			for(int r = -1; r < 2; r+=2){
-				BoardPosition bp = pos;
-				bool bounds = true;
-				while(bounds){
-					bp.Row += r;
-					bounds = PositionInBounds(bp);
-					if(!bounds)
-						break;
-					else { //friendlies in possible?
-						possible.Add(bp);
-						break;
-					}
-
+			possible = RookThreat(pos);
+			for(int i = 0; i < possible.Count; i++){
+				if(!PositionIsEnemy(possible[i], GetPlayerAtPosition(possible[i])) && !PositionIsEmpty(possible[i])){
+					possible.Remove(possible[i]);
+					i--;
 				}
 			}
-			for(int c = -1; c < 2; c+=2){
-				BoardPosition bp = pos;
-				bool bounds = true;
-				while(bounds){
-					bp.Col += c;
-					bounds = PositionInBounds(bp);
-					if(!bounds)
-						break;
-					else { //friendlies in possible?
-						possible.Add(bp);
-						break;
-					}
-
-				}
-			}
+			
 			return possible;
+
 		}
 		private List<BoardPosition> RookThreat(BoardPosition pos){
 			List<BoardPosition> threatened = new List<BoardPosition>();
@@ -246,14 +246,14 @@ namespace Cecs475.BoardGames.Chess {
 					if(!bounds)
 						break;
 					else if(PositionIsEmpty(bp)){
+						threatened.Add(bp);
 						continue;
 					}
-					else if(PositionIsEnemy(bp, player)){
+					else {
 						threatened.Add(bp);
 						break;
 					}
-					else
-						break;
+					
 
 				}
 			}
@@ -266,14 +266,14 @@ namespace Cecs475.BoardGames.Chess {
 					if(!bounds)
 						break;
 					else if(PositionIsEmpty(bp)){
+						threatened.Add(bp);
 						continue;
 					}
-					else if(PositionIsEnemy(bp, player)){
+					else {
 						threatened.Add(bp);
 						break;
 					}
-					else
-						break;
+
 
 				}
 			}
@@ -282,30 +282,20 @@ namespace Cecs475.BoardGames.Chess {
 
 		private List<BoardPosition> BishopPossible(BoardPosition pos){
 			List<BoardPosition> possible = new List<BoardPosition>();
-			int player = GetPlayerAtPosition(pos);
-			for(int r = -1; r < 2; r += 2){
-				for(int c = -1; c < 2; c += 2){
-					BoardPosition bp = pos;
-					bool bounds = true;
-					while(bounds){
-						bp.Row += r;
-						bp.Col += c;
-						bounds = PositionInBounds(bp);
-						if(!bounds) //not in bounds
-							break;
-						else { //if enemy, empty, or my friend? 
-							possible.Add(bp);
-							break;
-						}
-
-
-					}
+			possible = BishopThreat(pos);
+			for(int i = 0; i < possible.Count; i++){
+				if(!PositionIsEnemy(possible[i], GetPlayerAtPosition(possible[i])) && !PositionIsEmpty(possible[i])){
+					possible.Remove(possible[i]);
+					i--;
 				}
 			}
+			
 			return possible;
 		}
 
 		private List<BoardPosition> BishopThreat(BoardPosition pos){
+
+
 			List<BoardPosition> threatened = new List<BoardPosition>();
 			int player = GetPlayerAtPosition(pos);
 			for(int r = -1; r < 2; r += 2){
@@ -316,17 +306,16 @@ namespace Cecs475.BoardGames.Chess {
 						bp.Row += r;
 						bp.Col += c;
 						bounds = PositionInBounds(bp);
-						if(!bounds)
+						if(!bounds) //end if out of bounds
 							break;
-						else if(PositionIsEmpty(bp)){
+						else if(PositionIsEmpty(bp)){ //add and continue if empty
+							threatened.Add(bp);
 							continue;
 						}
-						else if(PositionIsEnemy(bp, player)){
-							threatened.Add(bp);
+						else{
+							threatened.Add(bp); //add if hit piece and done
 							break;
 						}
-						else
-							break;
 
 					}
 				}
@@ -336,20 +325,14 @@ namespace Cecs475.BoardGames.Chess {
 
 		private List<BoardPosition> KnightPossible(BoardPosition pos){
 			List<BoardPosition> possible = new List<BoardPosition>();
-			int player = GetPlayerAtPosition(pos);
-			List<BoardPosition> position = new List<BoardPosition>(){
-				new BoardPosition(pos.Row-2, pos.Row-1),
-				new BoardPosition(pos.Row-2, pos.Row+1),
-				new BoardPosition(pos.Row+2, pos.Row+1),
-				new BoardPosition(pos.Row-2, pos.Row-1),
-				new BoardPosition(pos.Col-2, pos.Row-1),
-				new BoardPosition(pos.Col-2, pos.Row+1),
-				new BoardPosition(pos.Col+2, pos.Row+1),
-				new BoardPosition(pos.Col-2, pos.Row-1)};
-			foreach(BoardPosition bp in position){
-				if(PositionInBounds(bp) && PositionIsEnemy(bp, player))
-					possible.Add(bp);
+			possible = KnightThreat(pos);
+			for(int i = 0; i < possible.Count; i++){
+				if(!PositionIsEnemy(possible[i], GetPlayerAtPosition(possible[i])) && !PositionIsEmpty(possible[i])){
+					possible.Remove(possible[i]);
+					i--;
+				}
 			}
+			
 			return possible;
 		}
 		private List<BoardPosition> KnightThreat(BoardPosition pos){
@@ -365,13 +348,12 @@ namespace Cecs475.BoardGames.Chess {
 				new BoardPosition(pos.Col+2, pos.Row+1),
 				new BoardPosition(pos.Col-2, pos.Row-1)};
 			foreach(BoardPosition bp in position){
-				if(PositionInBounds(bp) && PositionIsEnemy(bp, player))
+				if(PositionInBounds(bp))
 					threatened.Add(bp);
 			}
 			return threatened;
 		}
 
-		//use array to check if they've moved
 		private List<BoardPosition> PawnPossible(BoardPosition position){
 			List<BoardPosition> possible = new List<BoardPosition>();
 			int player = GetPlayerAtPosition(position), truePlayer = player;
@@ -383,13 +365,14 @@ namespace Cecs475.BoardGames.Chess {
 			BoardPosition p1 = new BoardPosition(r, position.Col - 1);
 			BoardPosition p2 = new BoardPosition(r, position.Col + 1);
 			BoardPosition forward = new BoardPosition(r, position.Col);
-			if(PositionInBounds(p1) && PositionIsEnemy(p1, truePlayer))
+			if(PositionInBounds(p1) && (PositionIsEnemy(p1, truePlayer)
+				 || isPassant(position) == 3))
 				possible.Add(p1);
-			if(PositionInBounds(p2) && PositionIsEnemy(p2, truePlayer))
+			if(PositionInBounds(p2) && (PositionIsEnemy(p2, truePlayer)
+				|| isPassant(position) == 4))
 				possible.Add(p2);
 			if(PositionInBounds(forward) && PositionIsEmpty(forward))
 				possible.Add(forward);
-			//TODO: implement en passant
 			return possible;
 		}		
 		private List<BoardPosition> PawnThreat(BoardPosition position){
@@ -409,12 +392,20 @@ namespace Cecs475.BoardGames.Chess {
 				threatened.Add(p1);
 			if(PositionInBounds(p2) && PositionIsEnemy(p2, truePlayer))
 				threatened.Add(p2);
+			int result = isPassant(position);
+			if(result != 0){
+				if(result == 3 && threatened.Contains(p1) == false)
+					threatened.Add(p1);
+				if(result == 4 && threatened.Contains(p2) == false)
+					threatened.Add(p2);
+				
+			}
 			//implement en passant, possibly wrong about threatened square?
 			
 			return threatened;
 		}
 
-		private BoardPosition isPassant(BoardPosition position){
+		private int isPassant(BoardPosition position){
 			BoardPosition p3 = new BoardPosition(position.Row, position.Col-1);
 			BoardPosition p4 = new BoardPosition(position.Row, position.Col+1);			
 			int player = GetPlayerAtPosition(position), truePlayer = player;
@@ -424,11 +415,12 @@ namespace Cecs475.BoardGames.Chess {
 				player = 1;
 			int r = position.Row+player;
 			if(PositionInBounds(p3) && pawnMovedTwo.Contains(p3))
-				return p3;
+				return 3;
 			else if(PositionInBounds(p4) && pawnMovedTwo.Contains(p4))
-				return p4;
-
+				return 4;
+			return 0;
 		}
+
 		private List<BoardPosition> GetPlayerPieces(int player){
 			List<BoardPosition> list = new List<BoardPosition>();
 			for(int i = 0; i < 8; i++){
