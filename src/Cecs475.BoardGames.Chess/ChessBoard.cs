@@ -92,6 +92,24 @@ namespace Cecs475.BoardGames.Chess {
 
 		public void ApplyMove(IGameMove move) {
 			ChessMove m = move as ChessMove;
+			//record MoveHistory
+			//implement move
+			if(m.MoveType == ChessMoveType.Normal && PositionIsEnemy(m.EndPosition, CurrentPlayer)){
+				m.Captured = GetPieceAtPosition(m.EndPosition);
+				SetPosition(m.EndPosition, m.Piece);
+				//m.MoveType = ChessMoveType.Normal;
+			}
+			else if(m.MoveType == ChessMoveType.EnPassant){
+				m.Captured = GetPieceAtPosition(pawnMovedTwo[0]);
+				SetPosition(m.EndPosition, m.Piece);
+				mBoard[pawnMovedTwo[0].Row, pawnMovedTwo[0].Col] = 0;
+			}
+			else if(m.MoveType == ChessMoveType.CastleKingSide){
+				SetPosition(m.EndPosition, m.Piece);
+				BoardPosition kRook = m.EndPosition;
+				//kRook.Col
+				//SetPosition(new )
+			}
 			
 		}
 
@@ -436,7 +454,46 @@ namespace Cecs475.BoardGames.Chess {
 
 		public void UndoLastMove() {
 			// TODO: implement this method. Make sure to account for "special" moves.
-			throw new NotImplementedException();
+			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
+			//change the player
+			first = !first;
+			int player = first ? 1:-1;
+			if(m.MoveType == ChessMoveType.Normal){
+				//first move the position that moved
+				SetPosition(m.StartPosition, m.Piece);
+				//then restore a piece if Captured
+				if(!m.Captured.Equals(null)){
+					SetPosition(m.EndPosition, m.Captured);
+				}
+			}
+			else if(m.MoveType == ChessMoveType.EnPassant){
+				SetPosition(m.StartPosition, m.Piece);
+				BoardPosition bp = m.EndPosition;
+				bp.Row += player;
+				SetPosition(bp, m.Captured);
+			}
+			else if(m.MoveType == ChessMoveType.CastleKingSide){
+				SetPosition(m.StartPosition, m.Piece);
+				int r =  first ? 7 : 0;
+				mBoard[r,5] = 0;
+				mBoard[r,7] = first ? (sbyte)3 : (sbyte)-3;
+				
+				
+			}
+			else if(m.MoveType == ChessMoveType.CastleQueenSide){
+				SetPosition(m.StartPosition, m.Piece);
+				int r =  first ? 7 : 0;
+				mBoard[r,3] = 0;
+				mBoard[r,0] = first ? (sbyte)3 : (sbyte)-3;
+				
+				
+			}
+			else{
+				SetPosition(m.EndPosition, m.Captured);
+				first = !first;
+			}
+			
+
 		}
 
 		
