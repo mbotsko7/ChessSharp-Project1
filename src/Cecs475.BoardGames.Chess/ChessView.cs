@@ -86,6 +86,7 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			output.WriteLine();
 			output.WriteLine("   a b c d e f g h");
+			
 		}
 	}
 }
