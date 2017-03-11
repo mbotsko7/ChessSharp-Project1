@@ -90,8 +90,11 @@ namespace Cecs475.BoardGames.Chess.Test {
 		/// </summary>
 		protected static void ApplyMovesToBoard(ChessBoard board, IEnumerable<ChessMove> moves) {
 			foreach (var move in moves) {
+				
 				ApplyMove(board, move);
+				Console.WriteLine($"board val is {board.GetPieceAtPosition(Pos(6,3)).PieceType}");
 			}
+			
 		}
 
 		/// <summary>

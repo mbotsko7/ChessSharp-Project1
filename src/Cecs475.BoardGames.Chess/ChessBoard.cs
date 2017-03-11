@@ -96,17 +96,14 @@ namespace Cecs475.BoardGames.Chess {
 			ChessMove m = move as ChessMove;
 			//record MoveHistory
 			//implement move
-			
 			if(m.MoveType == ChessMoveType.Normal && PositionIsEnemy(m.EndPosition, CurrentPlayer)){
 				m.Captured = GetPieceAtPosition(m.EndPosition);
 				if(m.Captured.Player == 1)
 					Value -= GetPieceValue(m.Captured.PieceType);
 				else
 					Value += GetPieceValue(m.Captured.PieceType);
-
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				
 			}
 			else if(m.MoveType == ChessMoveType.Normal && PositionIsEmpty(m.EndPosition)){
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
@@ -157,9 +154,44 @@ namespace Cecs475.BoardGames.Chess {
 				else
 					possible.AddRange(KingPossible(position));//convertMoveList(position, KingPossible(position)));
 			}
-			//EndangerKing(ref possible, findKing());
+			//possible = EndangerKing(possible, findKing());
 			return possible;
 			
+		}
+		private BoardPosition findKing(){
+			int king = CurrentPlayer == 1 ? 7 : -7;
+			
+			int kRow = -1, kCol = -1;
+			for(int r = 0; r < 8; r++){
+				for(int c = 0; c < 8; c++){
+					if(mBoard[r, c] == king){
+						kRow = r;
+						kCol = c;
+						
+					}
+				}
+			}
+			return new BoardPosition(kRow, kCol);
+		}
+
+		private List<ChessMove> EndangerKing(List<ChessMove> m, BoardPosition kp){
+			int current = CurrentPlayer;
+			for(int i = 0; i < m.Count; i++){
+				ApplyMove(m[i]);
+				var threat = (CurrentPlayer == 1 ? GetThreatenedPositions(1) : GetThreatenedPositions(2)) as List<BoardPosition>;
+				foreach(BoardPosition move in threat){
+
+					if(move.Equals(kp)){
+						m.RemoveAt(i);
+						i--;
+						break;
+					}
+				}
+				UndoLastMove();
+				
+			}
+			return m;
+
 		}
 
 		private List<BoardPosition> convertMoveList(List<ChessMove> l){
@@ -232,37 +264,19 @@ namespace Cecs475.BoardGames.Chess {
 		public bool IsStalemate{
 			get{return false;}
 		}
-		private BoardPosition findKing(){
-			int king = CurrentPlayer == 1 ? 7 : -7;
-			
-			int kRow = -1, kCol = -1;
-			for(int r = 0; r < 8; r++){
-				for(int c = 0; c < 8; c++){
-					if(mBoard[r, c] == king){
-						kRow = r;
-						kCol = c;
-						
-					}
+		
+		private bool PassantPossible(){
+			ChessMove cm = MoveHistory[MoveHistory.Count-1] as ChessMove;
+			return cm.ForwardTwice;
+		}
+		private bool hasMoved(BoardPosition bp){
+			foreach(ChessMove m  in MoveHistory){
+				if(m.EndPosition.Equals(bp) && m.pieceval.Equals(mBoard[bp.Row, bp.Col])){
+					return true;
 				}
 			}
-			return new BoardPosition(kRow, kCol);
+			return false;
 		}
-
-		private void EndangerKing(ref List<ChessMove> m, BoardPosition kp){
-			
-			for(int i = 0; i < m.Count; i++){
-				ApplyMove(m[i]);
-				List<BoardPosition> threat = (CurrentPlayer == 1 ? GetThreatenedPositions(1) : GetThreatenedPositions(2)) as List<BoardPosition>;
-				UndoLastMove();
-				if(threat.Contains(kp)){
-					Console.WriteLine($"True at {m[i].ToString()}");
-					m.RemoveAt(i);
-					i--;
-				}
-			}
-
-		}
-
 		private void Castle(BoardPosition king, ref List<BoardPosition> l){
 			BoardPosition queenRook, kingRook;
 			if(first){
@@ -284,7 +298,6 @@ namespace Cecs475.BoardGames.Chess {
 			//List<BoardPosition> possible = new List<BoardPosition>();
 			var possible = KingThreat(pos);
 			for(int i = 0; i < possible.Count; i++){
-				Console.WriteLine(possible[i].ToString());
 				if(!PositionIsEnemy(possible[i].EndPosition, CurrentPlayer) && !PositionIsEmpty(possible[i].EndPosition)){
 					possible.RemoveAt(i);
 					i--;
@@ -509,8 +522,13 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			BoardPosition forward = new BoardPosition(r, position.Col);
 			BoardPosition forward2 = new BoardPosition(player+r, position.Col);
-			if(PositionInBounds(forward)){ possible.Add(new ChessMove(position, forward));}
-			if(PositionInBounds(forward2)){ possible.Add(new ChessMove(position, forward2));}
+			if(PositionInBounds(forward))
+				possible.Add(new ChessMove(position, forward, mBoard[position.Row, position.Col]));
+			if(PositionInBounds(forward2) && hasMoved(position) == false){
+				ChessMove cm = new ChessMove(position, forward2, mBoard[position.Row, position.Col]);
+				cm.ForwardTwice = true;
+				possible.Add(cm);
+			}
 			
 			return possible;
 		}		
@@ -529,9 +547,9 @@ namespace Cecs475.BoardGames.Chess {
 
 
 			if(PositionInBounds(forwardLeft))
-				threatened.Add(new ChessMove(position, forwardLeft));
+				threatened.Add(new ChessMove(position, forwardLeft, mBoard[position.Row, position.Col]));
 			if(PositionInBounds(forwardRight))
-				threatened.Add(new ChessMove(position, forwardRight));
+				threatened.Add(new ChessMove(position, forwardRight, mBoard[position.Row, position.Col]));
 			
 			// object passant = isPassant(position);
 			// if(passant != null){

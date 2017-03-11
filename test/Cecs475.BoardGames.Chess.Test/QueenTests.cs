@@ -129,17 +129,22 @@ namespace Cecs475.BoardGames.Chess.Test {
 		/// </summary>
 		[Fact]
 		public void checkUndoQueen() {
+			Console.WriteLine("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj");
 			ChessBoard b = CreateBoardFromMoves(new ChessMove[] {
 					 Move("e2", "e3"), // pawn to e3
                 Move("d7", "d6"), // pawn to d6
                 Move("f1", "e2"), // bishop tp e2
                 Move("d8", "d7"), // queen to d7
 				Move("e2", "d3"), // bishop to d3
-                Move("d7", "b5"), // queen test
-                Move("g2", "g3") // pawn to g3
+                Move("d7", "b5") // queen test
+                //Move("g2", "g3") // pawn to g3
 			});
 			//moves black queen to capture white bishop
+
+			ApplyMove(b, Move("g2,g3"));
+			Console.WriteLine($"The value is {b.Value}");
 			ApplyMove(b, Move("b5,d3"));
+			Console.WriteLine($"The post value is {b.Value}");
 
 			b.Value.Should().Be(b.GetPieceValue(ChessPieceType.Bishop) * -1, "captured a white bishop"); //value should be negative since -3 for a white bishop 
 			b.GetPieceAtPosition(Pos("d3")).PieceType.Should().Be(ChessPieceType.Queen, "a queen should be at this location d3");

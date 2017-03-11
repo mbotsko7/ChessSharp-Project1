@@ -45,6 +45,7 @@ public class ChessMove : IGameMove, IEquatable<ChessMove> {
 			StartPosition = start;
 			EndPosition = end;
 			MoveType = ChessMoveType.Normal;
+			
 		}
 
 		public bool Equals(ChessMove other) {
@@ -60,6 +61,11 @@ public class ChessMove : IGameMove, IEquatable<ChessMove> {
 		public ChessMove(BoardPosition start, BoardPosition end, ChessMoveType type) :
 			this(start, end) {
 			MoveType = type;
+		}
+
+		public ChessMove(BoardPosition start, BoardPosition end, int cpp) :
+			this(start, end) {
+			pieceval = cpp;
 		}
 
 		public override string ToString() {
@@ -105,5 +111,9 @@ public class ChessMove : IGameMove, IEquatable<ChessMove> {
 		/// The type of move being applied.
 		/// </summary>
 		public ChessMoveType MoveType { get; set; }
+
+		public bool ForwardTwice {get; set;}
+
+		public int pieceval {get; set;}
 	}
 }
