@@ -92,7 +92,6 @@ namespace Cecs475.BoardGames.Chess.Test {
 			foreach (var move in moves) {
 				
 				ApplyMove(board, move);
-				Console.WriteLine($"board val is {board.GetPieceAtPosition(Pos(6,3)).PieceType}");
 			}
 			
 		}

@@ -24,7 +24,7 @@ namespace Cecs475.BoardGames.Chess {
 
 		private List<BoardPosition> moved = new List<BoardPosition>();
 		private BoardPosition pawnMovedTwo = new BoardPosition(-1, -1);
-		private bool first;
+		private bool first, promotion;
 		// TODO:
 		// You need a way of keeping track of certain game state flags. For example, a rook cannot perform a castling move
 		// if either the rook or its king has moved in the game, so you need a way of determining whether those things have 
@@ -38,6 +38,7 @@ namespace Cecs475.BoardGames.Chess {
 			MoveHistory = new List<IGameMove>();
 			first = true;
 			Value = 0;
+			promotion = false;
 			// TODO:
 			// Finish any other one-time setup.
 		}
@@ -108,6 +109,11 @@ namespace Cecs475.BoardGames.Chess {
 			else if(m.MoveType == ChessMoveType.Normal && PositionIsEmpty(m.EndPosition)){
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				if(GetPieceAtPosition(m.EndPosition).PieceType == ChessPieceType.Pawn
+					&& (m.EndPosition.Row == 0 || m.EndPosition.Row == 7)){
+						promotion = true;
+					}
+
 			}
 			else if(m.MoveType == ChessMoveType.EnPassant){
 				
@@ -126,12 +132,46 @@ namespace Cecs475.BoardGames.Chess {
 				//kRook.Col
 				//SetPosition(new )
 			}
+			else if(m.MoveType == ChessMoveType.PawnPromote){
+				int player = CurrentPlayer == 1 ? 1 : -1;
+				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(m.EndPosition.Col*player);
+			}
 			first = !first;
 			MoveHistory.Add(m);
 			
+
+			
 		}
 
+		public IEnumerable<IGameMove> GetPromotionMoves(){
+			List<ChessMove> list = new List<ChessMove>();
+			int row = -1, col = -1;
+			for(int r = 0; r < 8; r += 7){
+				for(int c = 0; c < 8; c++){
+					if(mBoard[r,c] == 1 || mBoard[r,c] == -1)
+						{
+							row = r;
+							col = c;
+						}
+				}
+			}
+			BoardPosition position = new BoardPosition(row, col);
+			BoardPosition rook = new BoardPosition(-1, (int)ChessPieceType.RookPawn);
+			BoardPosition bishop = new BoardPosition(-1, (int)ChessPieceType.Bishop);
+			BoardPosition knight = new BoardPosition(-1, (int)ChessPieceType.Knight);
+			BoardPosition queen = new BoardPosition(-1, (int)ChessPieceType.Queen);
+			
+			list.Add(new ChessMove(position, rook));
+			list.Add(new ChessMove(position, bishop));
+			list.Add(new ChessMove(position, queen));
+			list.Add(new ChessMove(position, knight));
+			return list;
+		}
 		public IEnumerable<IGameMove> GetPossibleMoves() {
+			if(promotion){
+				promotion = false;
+				return GetPromotionMoves();
+			}
 			List<BoardPosition> positions = GetPlayerPieces(CurrentPlayer);
 			List<ChessMove> possible = new List<ChessMove>();
 			foreach(BoardPosition position in positions){
@@ -270,15 +310,19 @@ namespace Cecs475.BoardGames.Chess {
 		}
 		
 		private bool PassantPossible(){
+			if(MoveHistory.Count == 0)
+				return false;
 			ChessMove cm = MoveHistory[MoveHistory.Count-1] as ChessMove;
 			return cm.ForwardTwice;
 		}
+
 		private bool hasMoved(BoardPosition bp){
 			foreach(ChessMove m  in MoveHistory){
-				if(m.EndPosition.Equals(bp) && m.pieceval.Equals(mBoard[bp.Row, bp.Col])){
+				if(m.EndPosition.Equals(bp) && m.pieceval.Equals(mBoard[bp.Row, bp.Col]) ){
 					return true;
 				}
 			}
+			
 			return false;
 		}
 		private void Castle(BoardPosition king, ref List<BoardPosition> l){
@@ -526,12 +570,15 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			BoardPosition forward = new BoardPosition(r, position.Col);
 			BoardPosition forward2 = new BoardPosition(player+r, position.Col);
-			if(PositionInBounds(forward) && PositionIsEmpty(forward))
+			
+			if(PositionInBounds(forward) && PositionIsEmpty(forward)) {
 				possible.Add(new ChessMove(position, forward, mBoard[position.Row, position.Col]));
-			if(PositionInBounds(forward2) && hasMoved(position) == false && PositionIsEmpty(forward) && PositionIsEmpty(forward2)){
-				ChessMove cm = new ChessMove(position, forward2, mBoard[position.Row, position.Col]);
-				cm.ForwardTwice = true;
-				possible.Add(cm);
+				if(PositionInBounds(forward2) && hasMoved(position) == false && PositionIsEmpty(forward2)
+					&& (position.Row == 6 | position.Row == 1)){
+					ChessMove cm = new ChessMove(position, forward2, mBoard[position.Row, position.Col]);
+					cm.ForwardTwice = true;
+					possible.Add(cm);
+				}
 			}
 			
 			return possible;
@@ -557,7 +604,7 @@ namespace Cecs475.BoardGames.Chess {
 			
 			if(PassantPossible()){
 				ChessMove cm = IsPassant(position);
-				if(cm.Equals(null) == false){
+				if(cm.StartPosition.Row != -1){
 					threatened.Add(cm);
 				}
 			}
@@ -586,7 +633,7 @@ namespace Cecs475.BoardGames.Chess {
 				m3.Captured = GetPieceAtPosition(passing.EndPosition);
 				return m3;
 			}
-			return null;
+			return new ChessMove(new BoardPosition(-1,-1), new BoardPosition(-1, -1));
 		}
 
 		private List<BoardPosition> GetPlayerPieces(int player){
@@ -629,6 +676,7 @@ namespace Cecs475.BoardGames.Chess {
 						Value += GetPieceValue(m.Captured.PieceType);
 					else
 						Value -= GetPieceValue(m.Captured.PieceType);
+
 			}
 			else if(m.MoveType == ChessMoveType.CastleKingSide){
 				SetPosition(m.StartPosition, m.Piece);
@@ -645,6 +693,12 @@ namespace Cecs475.BoardGames.Chess {
 				mBoard[r,0] = first ? (sbyte)3 : (sbyte)-3;
 				
 				
+			}
+			else if(m.MoveType == ChessMoveType.PawnPromote){
+				int p = CurrentPlayer == 1 ? 1 : -1;
+				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(player);
+				first = !first;
+				promotion = true;
 			}
 			else{
 				SetPosition(m.EndPosition, m.Captured);

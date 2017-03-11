@@ -143,7 +143,11 @@ namespace Cecs475.BoardGames.Chess.Test {
 			b1.CurrentPlayer.Should().Be(2, "Player 2 turn");
 			ApplyMove(b1, Move("b7", "b5"));
 			b1.CurrentPlayer.Should().Be(1, "Player 1 turn");
+            
 			var possMoves = b1.GetPossibleMoves();
+            foreach(ChessMove m  in possMoves){Console.WriteLine(m.ToString());}
+            ChessView v = new ChessView();
+            v.PrintView(Console.Out, b1);
 			possMoves.Should().HaveCount(7, "There are 2 possible moves for the pawn, and 5 for the King");
 			ApplyMove(b1, Move("c5", "b6")); //en passant
 
