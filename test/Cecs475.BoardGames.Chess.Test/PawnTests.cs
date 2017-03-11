@@ -85,6 +85,8 @@ namespace Cecs475.BoardGames.Chess.Test
 			ChessBoard b = new ChessBoard();
 			ApplyMove(b, Move("c2", "c4"));
 			ApplyMove(b, Move("c7", "c5"));
+            ChessView v = new ChessView();
+            v.PrintView(Console.Out, b);
 			b.GetPossibleMoves().Should().NotContain(Move("c4", "c5"),
 				 "Pawn will collide with another pawn");
 			ApplyMove(b, Move("a2", "a4"));

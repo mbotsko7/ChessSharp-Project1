@@ -110,11 +110,15 @@ namespace Cecs475.BoardGames.Chess {
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
 			}
 			else if(m.MoveType == ChessMoveType.EnPassant){
-				m.Captured = GetPieceAtPosition(pawnMovedTwo);
+				
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				SetPosition((MoveHistory[MoveHistory.Count-1] as ChessMove).EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				if(m.Captured.Player == 1)
+					Value -= GetPieceValue(m.Captured.PieceType);
+				else
+					Value += GetPieceValue(m.Captured.PieceType);
 
-				//mBoard[pawnMovedTwo.Row, pawnMovedTwo.Col] = 0;
 			}
 			else if(m.MoveType == ChessMoveType.CastleKingSide){
 				SetPosition(m.EndPosition, m.Piece);
@@ -522,9 +526,9 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			BoardPosition forward = new BoardPosition(r, position.Col);
 			BoardPosition forward2 = new BoardPosition(player+r, position.Col);
-			if(PositionInBounds(forward))
+			if(PositionInBounds(forward) && PositionIsEmpty(forward))
 				possible.Add(new ChessMove(position, forward, mBoard[position.Row, position.Col]));
-			if(PositionInBounds(forward2) && hasMoved(position) == false){
+			if(PositionInBounds(forward2) && hasMoved(position) == false && PositionIsEmpty(forward) && PositionIsEmpty(forward2)){
 				ChessMove cm = new ChessMove(position, forward2, mBoard[position.Row, position.Col]);
 				cm.ForwardTwice = true;
 				possible.Add(cm);
@@ -551,15 +555,16 @@ namespace Cecs475.BoardGames.Chess {
 			if(PositionInBounds(forwardRight))
 				threatened.Add(new ChessMove(position, forwardRight, mBoard[position.Row, position.Col]));
 			
-			// object passant = isPassant(position);
-			// if(passant != null){
-			// 	ChessMove en = new ChessMove(position, (BoardPosition) passant);
-			// 	en.MoveType = ChessMoveType.EnPassant;
-			// }
+			if(PassantPossible()){
+				ChessMove cm = IsPassant(position);
+				if(cm.Equals(null) == false){
+					threatened.Add(cm);
+				}
+			}
 			return threatened;
 		}
 
-		private object isPassant(BoardPosition position){
+		private ChessMove IsPassant(BoardPosition position){
 			BoardPosition left = new BoardPosition(position.Row, position.Col-1);
 			BoardPosition right = new BoardPosition(position.Row, position.Col+1);			
 			int player = GetPlayerAtPosition(position), truePlayer = player;
@@ -568,14 +573,19 @@ namespace Cecs475.BoardGames.Chess {
 			else
 				player = -1;
 			int r = position.Row+player;
-			if(PositionInBounds(left) && pawnMovedTwo.Equals(left)){
+			ChessMove passing = MoveHistory[MoveHistory.Count-1] as ChessMove;
+			if(PositionInBounds(left) && passing.EndPosition.Equals(left)){
 				ChessMove m3 = new ChessMove(position, new BoardPosition(r, position.Col-1));
 				m3.MoveType = ChessMoveType.EnPassant;
-				//m3.Captured = 
-				return left;
+				m3.Captured = GetPieceAtPosition(passing.EndPosition);
+				return m3;
 			}
-			else if(PositionInBounds(right) && pawnMovedTwo.Equals(right))
-				return right;
+			else if(PositionInBounds(right) && passing.EndPosition.Equals(right)){
+				ChessMove m3 = new ChessMove(position, new BoardPosition(r, position.Col+1));
+				m3.MoveType = ChessMoveType.EnPassant;
+				m3.Captured = GetPieceAtPosition(passing.EndPosition);
+				return m3;
+			}
 			return null;
 		}
 
@@ -613,10 +623,12 @@ namespace Cecs475.BoardGames.Chess {
 				}
 			}
 			else if(m.MoveType == ChessMoveType.EnPassant){
-				SetPosition(m.StartPosition, m.Piece);
-				BoardPosition bp = m.EndPosition;
-				bp.Row += player;
-				SetPosition(bp, m.Captured);
+				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
+				SetPosition((MoveHistory[MoveHistory.Count-2] as ChessMove).EndPosition, m.Captured);
+				if(m.Captured.Player == 1)
+						Value += GetPieceValue(m.Captured.PieceType);
+					else
+						Value -= GetPieceValue(m.Captured.PieceType);
 			}
 			else if(m.MoveType == ChessMoveType.CastleKingSide){
 				SetPosition(m.StartPosition, m.Piece);

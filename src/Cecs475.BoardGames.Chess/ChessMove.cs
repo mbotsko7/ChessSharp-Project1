@@ -102,6 +102,7 @@ public class ChessMove : IGameMove, IEquatable<ChessMove> {
 		/// <summary>
 		/// The chess piece that was moved.
 		/// </summary>
+		
 		public ChessPiecePosition Piece { get; set; }
 		/// <summary>
 		/// Whatever piece was captured when this move was applied, if any.
