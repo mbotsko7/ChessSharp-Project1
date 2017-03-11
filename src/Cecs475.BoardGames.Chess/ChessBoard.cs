@@ -157,7 +157,7 @@ namespace Cecs475.BoardGames.Chess {
 				else
 					possible.AddRange(KingPossible(position));//convertMoveList(position, KingPossible(position)));
 			}
-			EndangerKing(ref possible, findKing());
+			//EndangerKing(ref possible, findKing());
 			return possible;
 			
 		}
