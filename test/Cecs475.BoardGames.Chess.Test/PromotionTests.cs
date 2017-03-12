@@ -317,12 +317,14 @@ namespace Cecs475.BoardGames.Chess.Test {
 			b.CurrentPlayer.Should().Be(1, "Player 1 starts the game");
 			var pawnpromotionexpected = GetMovesAtPosition(possMoves, Pos("d7"));
 			pawnpromotionexpected.Should().HaveCount(1, "Pawn should be able to move up to 8th rank");
+            ChessView v = new ChessView();
 			ApplyMove(b, Move("d7", "d8"));
 			possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
+            v.PrintView(Console.Out, b);
 			ApplyMove(b, Move("(d8, Queen)"));
 			var pawnpromotion = b.GetPieceAtPosition(Pos("d8"));
 			pawnpromotion.PieceType.Should().Be(ChessPieceType.Queen, "White pawn should be Queen");
-
+            v.PrintView(Console.Out, b);
 			possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
 			possMoves.Should().HaveCount(3).And.NotContain(Move("a2", "a1"));
 			ApplyMove(b, Move("h8", "h7"));
@@ -340,6 +342,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 		/// </summary>
 		[Fact]
 		public void UndoPromotion2() {
+            ChessView v = new ChessView();
 			ChessBoard b = CreateBoardWithPositions(
 			  Pos("a7"), ChessPieceType.Pawn, 1,
 			  Pos("e1"), ChessPieceType.King, 1,
@@ -347,11 +350,18 @@ namespace Cecs475.BoardGames.Chess.Test {
 			  Pos("e8"), ChessPieceType.King, 2);
 			ApplyMove(b, Move("a7", "a8")); //player 1
 			ApplyMove(b, Move("(a8, Queen)")); //player 1
+            v.PrintView(Console.Out, b);
 			var shouldBeQueen = b.GetPieceAtPosition(Pos(0, 0)).PieceType;
+            v.PrintView(Console.Out, b);
 			shouldBeQueen.Should().Be(ChessPieceType.Queen,
 				 "Pawn should have been promoted to queen");
 			b.IsCheck.Should().Be(true, "player 2 should be on check");// player 2 is in check
+            Console.WriteLine($"ayyy {b.MoveHistory.Count}");
+            v.PrintView(Console.Out, b);
+
 			b.UndoLastMove(); //player 2 undoes
+            v.PrintView(Console.Out, b);
+
 			var shouldBePawn = b.GetPieceAtPosition(Pos(0, 0)).PieceType;
 			shouldBePawn.Should().Be(ChessPieceType.Pawn,
 				 "Promoted pawn is back at selection of which piece to promote to");
