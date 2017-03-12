@@ -97,7 +97,15 @@ namespace Cecs475.BoardGames.Chess {
 			ChessMove m = move as ChessMove;
 			//record MoveHistory
 			//implement move
-			if(m.MoveType == ChessMoveType.Normal && PositionIsEnemy(m.EndPosition, CurrentPlayer)){
+			Console.WriteLine($"Move is {m.ToString()}");
+			Console.WriteLine($"Start {m.StartPosition.Row}, {m.StartPosition.Col}");
+			Console.WriteLine($"End {m.EndPosition.Row},{m.EndPosition.Col}, {m.MoveType}");
+			if(m.MoveType == ChessMoveType.PawnPromote){
+				int player = CurrentPlayer == 1 ? 1 : -1;
+				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(m.EndPosition.Col*player);
+				Console.WriteLine("ayy");
+			}
+			else if(m.MoveType == ChessMoveType.Normal && PositionIsEnemy(m.EndPosition, CurrentPlayer)){
 				m.Captured = GetPieceAtPosition(m.EndPosition);
 				if(m.Captured.Player == 1)
 					Value -= GetPieceValue(m.Captured.PieceType);
@@ -105,6 +113,12 @@ namespace Cecs475.BoardGames.Chess {
 					Value += GetPieceValue(m.Captured.PieceType);
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				if(GetPieceAtPosition(m.EndPosition).PieceType == ChessPieceType.Pawn
+					&& (m.EndPosition.Row == 0 || m.EndPosition.Row == 7)){
+						promotion = true;
+						first = !first;
+						
+					}
 			}
 			else if(m.MoveType == ChessMoveType.Normal && PositionIsEmpty(m.EndPosition)){
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
@@ -112,31 +126,21 @@ namespace Cecs475.BoardGames.Chess {
 				if(GetPieceAtPosition(m.EndPosition).PieceType == ChessPieceType.Pawn
 					&& (m.EndPosition.Row == 0 || m.EndPosition.Row == 7)){
 						promotion = true;
+						first = !first;
+						
 					}
 
 			}
-			else if(m.MoveType == ChessMoveType.EnPassant){
-				
-				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
-				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				SetPosition((MoveHistory[MoveHistory.Count-1] as ChessMove).EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				if(m.Captured.Player == 1)
-					Value -= GetPieceValue(m.Captured.PieceType);
-				else
-					Value += GetPieceValue(m.Captured.PieceType);
-
-			}
+			
 			else if(m.MoveType == ChessMoveType.CastleKingSide){
 				SetPosition(m.EndPosition, m.Piece);
 				BoardPosition kRook = m.EndPosition;
 				//kRook.Col
 				//SetPosition(new )
 			}
-			else if(m.MoveType == ChessMoveType.PawnPromote){
-				int player = CurrentPlayer == 1 ? 1 : -1;
-				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(m.EndPosition.Col*player);
-			}
+			
 			first = !first;
+			Console.WriteLine($"CurrentPlayer is {CurrentPlayer}");
 			MoveHistory.Add(m);
 			
 
@@ -161,10 +165,10 @@ namespace Cecs475.BoardGames.Chess {
 			BoardPosition knight = new BoardPosition(-1, (int)ChessPieceType.Knight);
 			BoardPosition queen = new BoardPosition(-1, (int)ChessPieceType.Queen);
 			
-			list.Add(new ChessMove(position, rook));
-			list.Add(new ChessMove(position, bishop));
-			list.Add(new ChessMove(position, queen));
-			list.Add(new ChessMove(position, knight));
+			list.Add(new ChessMove(position, rook, ChessMoveType.PawnPromote));
+			list.Add(new ChessMove(position, bishop, ChessMoveType.PawnPromote));
+			list.Add(new ChessMove(position, queen, ChessMoveType.PawnPromote));
+			list.Add(new ChessMove(position, knight, ChessMoveType.PawnPromote));
 			return list;
 		}
 		public IEnumerable<IGameMove> GetPossibleMoves() {
@@ -697,7 +701,7 @@ namespace Cecs475.BoardGames.Chess {
 			else if(m.MoveType == ChessMoveType.PawnPromote){
 				int p = CurrentPlayer == 1 ? 1 : -1;
 				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(player);
-				first = !first;
+				//first = !first;
 				promotion = true;
 			}
 			else{

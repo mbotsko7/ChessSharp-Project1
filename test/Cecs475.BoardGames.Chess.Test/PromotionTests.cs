@@ -63,8 +63,11 @@ namespace Cecs475.BoardGames.Chess.Test {
 					 Move("b8", "a6"),
 					 Move("h6", "g7"),
 					 Move("a6", "b8"),
-					 Move("g7", "h8")
+					 
 				});
+            ApplyMove(b, Move("g7, h8"));
+            ChessView v = new ChessView();
+            v.PrintView(Console.Out, b);
 			b.GetPieceAtPosition(Pos(0, 7)).PieceType.Should().Be(ChessPieceType.Pawn, "Pawn should be waiting to be promoted after capture");
 			b.CurrentPlayer.Should().Be(1, "Player should still have it's 'turn' as a means to select promotion");
 			ApplyMove(b, Move("h8, Queen"));
@@ -261,7 +264,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 			var expectedMoves = GetMovesAtPosition(possMoves, Pos("a7"));
 			expectedMoves.Should().HaveCount(1, "There should only be one move.")
 				 .And.Contain(Move("a7", "a8"), "The only possible mve is a7 to a8.");
-
+            
 			b.CurrentPlayer.Should().Be(1, "Current player should be White.");
 
 			b.ApplyMove(Move("a7", "a8"));
