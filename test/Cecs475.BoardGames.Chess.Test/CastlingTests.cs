@@ -454,9 +454,10 @@ namespace Cecs475.BoardGames.Chess.Test {
 			var expectedKing = b.GetPieceAtPosition(Pos("g1"));
 			expectedKing.PieceType.Should()
 				 .Be(ChessPieceType.King, " because when you castle the king moves to this position");
-
+		    ChessView v = new ChessView();
+			v.PrintView(Console.Out, b);
 			b.UndoLastMove();
-
+			v.PrintView(Console.Out, b);
 			b.CurrentPlayer.Should().Be(1, "because we undid the move so it is white's turn again");
 
 			//king and castle need to be in their starting positions
