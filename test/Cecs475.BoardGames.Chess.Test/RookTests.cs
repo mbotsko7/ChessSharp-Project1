@@ -81,6 +81,8 @@ namespace Cecs475.BoardGames.Chess.Test {
 				Move("b1" , "a3"),
 				Move("b8" , "a6")
 			});
+			ChessView v = new ChessView();
+			v.PrintView(Console.Out, c);
 			var poss1 = c.GetPossibleMoves() as IEnumerable<ChessMove>;
 			var castling = GetMovesAtPosition(poss1, Pos("e1"));
 			castling.Should().Contain(Move("e1", "c1"), "King and rook both haven't moved and the spaces between them are clear to allow castling");

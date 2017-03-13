@@ -166,6 +166,8 @@ namespace Cecs475.BoardGames.Chess.Test {
 				Move("d7", "d5"),
 				Move("e5", "d6"),
 			});
+			ChessView v = new ChessView();
+			v.PrintView(Console.Out, b);
 			var captured = b.GetPieceAtPosition(Pos("d5"));
 			captured.Player.Should().Be(0, "Piece is captured and should be empty");
 

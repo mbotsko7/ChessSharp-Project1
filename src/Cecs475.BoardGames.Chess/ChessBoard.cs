@@ -155,7 +155,7 @@ namespace Cecs475.BoardGames.Chess {
 			else if(m.MoveType == ChessMoveType.EnPassant){
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				BoardPosition passing = new BoardPosition(m.EndPosition.Row + (first ? -1 : 1), m.EndPosition.Col);
+				BoardPosition passing = new BoardPosition(m.EndPosition.Row + (first ? 1:-1), m.EndPosition.Col);
 				SetPosition(passing, new ChessPiecePosition(ChessPieceType.Empty, 0));
 				if(m.Captured.Player == 1)
 					Value -= GetPieceValue(m.Captured.PieceType);
@@ -170,6 +170,84 @@ namespace Cecs475.BoardGames.Chess {
 			
 
 			
+		}
+		public void UndoLastMove() {
+			// TODO: implement this method. Make sure to account for "special" moves.
+			if(MoveHistory.Count == 0){
+				return;
+			}
+			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
+			//change the player
+			if(promotion){
+				promotion = false;
+				first = !first;
+			}
+			int player = first ? 1:-1;
+			if(m.MoveType == ChessMoveType.Normal){
+				//first move the position that moved
+				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
+				//then restore a piece if Captured
+				if(!m.Captured.Equals(null)){
+					SetPosition(m.EndPosition, m.Captured);
+					if(m.Captured.Player == 1)
+						Value += GetPieceValue(m.Captured.PieceType);
+					else
+						Value -= GetPieceValue(m.Captured.PieceType);
+				}
+			}
+			else if(m.MoveType == ChessMoveType.EnPassant){
+				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
+				SetPosition((MoveHistory[MoveHistory.Count-2] as ChessMove).EndPosition, m.Captured);
+				SetPosition(m.EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				if(m.Captured.Player == 1)
+						Value += GetPieceValue(m.Captured.PieceType);
+					else
+						Value -= GetPieceValue(m.Captured.PieceType);
+
+			}
+			else if(m.MoveType == ChessMoveType.CastleKingSide){
+				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
+				SetPosition(m.EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				BoardPosition rook = new BoardPosition(first ? 0:7, 5);
+				SetPosition(new BoardPosition(first ? 0:7, 7), GetPieceAtPosition(rook));
+				//SetPosition(rook, GetPieceAtPosition(new BoardPosition(first ? 0 : 7, 7)));
+				SetPosition(rook, new ChessPiecePosition(ChessPieceType.Empty, 0));
+			}
+			else if(m.MoveType == ChessMoveType.CastleQueenSide){
+				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
+				SetPosition(m.EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				BoardPosition rook = new BoardPosition(first ? 0:7, 3);
+				SetPosition(new BoardPosition(first ? 0:7, 0), GetPieceAtPosition(rook));
+				//SetPosition(rook, GetPieceAtPosition(new BoardPosition(first ? 0 : 7, 7)));
+				SetPosition(rook, new ChessPiecePosition(ChessPieceType.Empty, 0));
+				
+			}
+			else if(m.MoveType == ChessMoveType.PawnPromote){
+				first = !first;
+				int p = CurrentPlayer == 1 ? 1 : -1;
+				if(GetPlayerAtPosition(m.StartPosition) == 1){
+						Value -= GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
+					}
+					else{
+						Value += GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
+					}
+
+				Value += p;
+				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(player);
+				//first = !first;
+				promotion = true;
+				MoveHistory.RemoveAt(MoveHistory.Count -1);
+				return;
+			}
+			else{
+				SetPosition(m.EndPosition, m.Captured);
+				// ChessMove m2 = MoveHistory[MoveHistory.Count-2] as ChessMove;
+				// SetPosition(m2.StartPosition, m2.Piece);
+				// mBoard[m2.EndPosition.Row, m2.EndPosition.Col];
+			}
+			MoveHistory.RemoveAt(MoveHistory.Count-1);
+			first = !first;
+
 		}
 
 		public IEnumerable<IGameMove> GetPromotionMoves(){
@@ -232,6 +310,8 @@ namespace Cecs475.BoardGames.Chess {
 			return possible;
 			
 		}
+
+
 		private BoardPosition findKing(int player){
 			int king = player == 1 ? 7 : -7;
 			
@@ -249,7 +329,7 @@ namespace Cecs475.BoardGames.Chess {
 		}
 
 		private List<ChessMove> EndangerKing(List<ChessMove> m, BoardPosition kp){
-			
+
 			for(int i = 0; i < m.Count; i++){
 				//Console.WriteLine($"Before...The move is {m[i].ToString()} and the value is {Value} and type of {m[i].MoveType}");
 				ApplyMove(m[i]);
@@ -261,12 +341,13 @@ namespace Cecs475.BoardGames.Chess {
 						i--;
 						break;
 					}
+
 				}
 				UndoLastMove();
-				if(m[i].MoveType == ChessMoveType.PawnPromote){
-					m.RemoveAt(i);
-					i--;
-				}
+				// if(m[i].MoveType == ChessMoveType.PawnPromote){
+				// 	m.RemoveAt(i);
+				// 	i--;
+				// }
 				//Console.WriteLine($"After...The move is {m[i].ToString()} and the value is {Value}");
 			}
 			return m;
@@ -318,7 +399,10 @@ namespace Cecs475.BoardGames.Chess {
 		private bool check(){
 			BoardPosition k = findKing(CurrentPlayer);
 			List<BoardPosition> threat = GetThreatenedPositions(CurrentPlayer == 1?2:1) as List<BoardPosition>;
-			return doesContain(threat, k);
+			var x = GetPossibleMoves() as List<ChessMove>;
+			if(threat.Contains(k) && x.Count > 0)
+				return true;
+			return false;
 
 
 		}
@@ -331,18 +415,20 @@ namespace Cecs475.BoardGames.Chess {
 		}
 		private bool checkmate(){
 			var x = GetPossibleMoves() as List<ChessMove>;
-			if(check() && x.Count == 0){
+			BoardPosition k = findKing(CurrentPlayer);
+			List<BoardPosition> threat = GetThreatenedPositions(CurrentPlayer == 1?2:1) as List<BoardPosition>;
+			if(threat.Contains(k) && x.Count == 0)
 				return true;
-			}
 			return false;
 		}
 
 		public bool IsStalemate{
 			get{
 				var x = GetPossibleMoves() as List<ChessMove>;
-				if(!check() && x.Count == 0){
+				BoardPosition k = findKing(CurrentPlayer);
+				List<BoardPosition> threat = GetThreatenedPositions(CurrentPlayer == 1?2:1) as List<BoardPosition>;
+				if(threat.Contains(k) == false && x.Count == 0)
 					return true;
-				}
 				return false;
 			}
 		}
@@ -385,12 +471,12 @@ namespace Cecs475.BoardGames.Chess {
 			BoardPosition bp6 = new BoardPosition(side, 6);
 			if(PositionIsEmpty(bp1) && PositionIsEmpty(bp2) && PositionIsEmpty(bp3)
 				&& !doesContain(threat, bp1) && !doesContain(threat, bp2) && !doesContain(threat, bp3)
-				&& !hasMoved(kp) && !hasMoved(qRook) && !check() && !doesContain(threat, kp) && mBoard[side, 0] == (sbyte)(p*2)){
+				&& !hasMoved(kp) && !hasMoved(qRook) && !doesContain(threat, kp) && mBoard[side, 0] == (sbyte)(p*2)){
 				//if not under threat
 				list.Add(new ChessMove(kp, bp2, ChessMoveType.CastleQueenSide));
 			}
 			if(PositionIsEmpty(bp5) && PositionIsEmpty(bp6) && !doesContain(threat, bp5) && !doesContain(threat, bp6)
-				&& !hasMoved(kp) && !hasMoved(kRook) && !check() && !doesContain(threat, kp) && mBoard[side, 7] == (sbyte)(p*3)){
+				&& !hasMoved(kp) && !hasMoved(kRook) && !doesContain(threat, kp) && mBoard[side, 7] == (sbyte)(p*3)){
 				list.Add(new ChessMove(kp, bp6, ChessMoveType.CastleKingSide));
 			}
 			return list;
@@ -703,83 +789,7 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			return list;
 		}
-		public void UndoLastMove() {
-			// TODO: implement this method. Make sure to account for "special" moves.
-			if(MoveHistory.Count == 0){
-				return;
-			}
-			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
-			//change the player
-			if(promotion){
-				promotion = false;
-				first = !first;
-			}
-			int player = first ? 1:-1;
-			if(m.MoveType == ChessMoveType.Normal){
-				//first move the position that moved
-				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
-				//then restore a piece if Captured
-				if(!m.Captured.Equals(null)){
-					SetPosition(m.EndPosition, m.Captured);
-					if(m.Captured.Player == 1)
-						Value += GetPieceValue(m.Captured.PieceType);
-					else
-						Value -= GetPieceValue(m.Captured.PieceType);
-				}
-			}
-			else if(m.MoveType == ChessMoveType.EnPassant){
-				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
-				SetPosition((MoveHistory[MoveHistory.Count-2] as ChessMove).EndPosition, m.Captured);
-				if(m.Captured.Player == 1)
-						Value += GetPieceValue(m.Captured.PieceType);
-					else
-						Value -= GetPieceValue(m.Captured.PieceType);
-
-			}
-			else if(m.MoveType == ChessMoveType.CastleKingSide){
-				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
-				SetPosition(m.EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				BoardPosition rook = new BoardPosition(first ? 0:7, 5);
-				SetPosition(new BoardPosition(first ? 0:7, 7), GetPieceAtPosition(rook));
-				//SetPosition(rook, GetPieceAtPosition(new BoardPosition(first ? 0 : 7, 7)));
-				SetPosition(rook, new ChessPiecePosition(ChessPieceType.Empty, 0));
-			}
-			else if(m.MoveType == ChessMoveType.CastleQueenSide){
-				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
-				SetPosition(m.EndPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				BoardPosition rook = new BoardPosition(first ? 0:7, 3);
-				SetPosition(new BoardPosition(first ? 0:7, 0), GetPieceAtPosition(rook));
-				//SetPosition(rook, GetPieceAtPosition(new BoardPosition(first ? 0 : 7, 7)));
-				SetPosition(rook, new ChessPiecePosition(ChessPieceType.Empty, 0));
-				
-			}
-			else if(m.MoveType == ChessMoveType.PawnPromote){
-				first = !first;
-				int p = CurrentPlayer == 1 ? 1 : -1;
-				if(GetPlayerAtPosition(m.StartPosition) == 1){
-						Value -= GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
-					}
-					else{
-						Value += GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
-					}
-
-				Value += p;
-				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(player);
-				//first = !first;
-				promotion = true;
-				MoveHistory.RemoveAt(MoveHistory.Count -1);
-				return;
-			}
-			else{
-				SetPosition(m.EndPosition, m.Captured);
-				// ChessMove m2 = MoveHistory[MoveHistory.Count-2] as ChessMove;
-				// SetPosition(m2.StartPosition, m2.Piece);
-				// mBoard[m2.EndPosition.Row, m2.EndPosition.Col];
-			}
-			MoveHistory.RemoveAt(MoveHistory.Count-1);
-			first = !first;
-
-		}
+		
 
 		
 		/// <summary>
