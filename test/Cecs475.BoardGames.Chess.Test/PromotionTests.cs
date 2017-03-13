@@ -312,20 +312,26 @@ namespace Cecs475.BoardGames.Chess.Test {
 			Pos("e1"), ChessPieceType.King, 1,
 			Pos("a6"), ChessPieceType.RookKing, 1,
 			Pos("h8"), ChessPieceType.King, 2);
+			ChessView v = new ChessView();
+
 			var possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
 			possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
 			b.CurrentPlayer.Should().Be(1, "Player 1 starts the game");
 			var pawnpromotionexpected = GetMovesAtPosition(possMoves, Pos("d7"));
 			pawnpromotionexpected.Should().HaveCount(1, "Pawn should be able to move up to 8th rank");
-            ChessView v = new ChessView();
+            
 			ApplyMove(b, Move("d7", "d8"));
+			
 			possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
-            v.PrintView(Console.Out, b);
+			
 			ApplyMove(b, Move("(d8, Queen)"));
+			
 			var pawnpromotion = b.GetPieceAtPosition(Pos("d8"));
+			v.PrintView(Console.Out, b);
 			pawnpromotion.PieceType.Should().Be(ChessPieceType.Queen, "White pawn should be Queen");
-            v.PrintView(Console.Out, b);
+			v.PrintView(Console.Out, b);
 			possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
+			v.PrintView(Console.Out, b);
 			possMoves.Should().HaveCount(3).And.NotContain(Move("a2", "a1"));
 			ApplyMove(b, Move("h8", "h7"));
 			ApplyMove(b, Move("d8", "c8"));

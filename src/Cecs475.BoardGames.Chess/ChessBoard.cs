@@ -332,8 +332,19 @@ namespace Cecs475.BoardGames.Chess {
 
 			for(int i = 0; i < m.Count; i++){
 				//Console.WriteLine($"Before...The move is {m[i].ToString()} and the value is {Value} and type of {m[i].MoveType}");
+				bool before = first;
 				ApplyMove(m[i]);
+				if(before == first){
+					var mythreat = GetThreatenedPositions(first ? 2 :1 ) as List<BoardPosition>;
+					if(mythreat.Contains(findKing(CurrentPlayer))){
+						m.RemoveAt(i);
+						i--;
+						UndoLastMove();
+						continue;
+					}
+				}
 				var threat = GetThreatenedPositions(CurrentPlayer) as List<BoardPosition>;
+				
 				foreach(BoardPosition move in threat){
 
 					if(move.Equals(findKing(first ? 2 : 1))){
@@ -344,11 +355,7 @@ namespace Cecs475.BoardGames.Chess {
 
 				}
 				UndoLastMove();
-				// if(m[i].MoveType == ChessMoveType.PawnPromote){
-				// 	m.RemoveAt(i);
-				// 	i--;
-				// }
-				//Console.WriteLine($"After...The move is {m[i].ToString()} and the value is {Value}");
+				
 			}
 			return m;
 
@@ -470,7 +477,7 @@ namespace Cecs475.BoardGames.Chess {
 			BoardPosition bp5 = new BoardPosition(side, 5);
 			BoardPosition bp6 = new BoardPosition(side, 6);
 			if(PositionIsEmpty(bp1) && PositionIsEmpty(bp2) && PositionIsEmpty(bp3)
-				&& !doesContain(threat, bp1) && !doesContain(threat, bp2) && !doesContain(threat, bp3)
+				&& !doesContain(threat, bp2) && !doesContain(threat, bp3)
 				&& !hasMoved(kp) && !hasMoved(qRook) && !doesContain(threat, kp) && mBoard[side, 0] == (sbyte)(p*2)){
 				//if not under threat
 				list.Add(new ChessMove(kp, bp2, ChessMoveType.CastleQueenSide));

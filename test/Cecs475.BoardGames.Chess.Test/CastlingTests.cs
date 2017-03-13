@@ -183,16 +183,16 @@ namespace Cecs475.BoardGames.Chess.Test {
 				 .And.Contain(Move("e1", "g1"), "King should be able to castle with queen side rook");
 		    ChessView v = new ChessView();
 			//castle left
-			v.PrintView(Console.Out, b);
+			// v.PrintView(Console.Out, b);
 			ApplyMove(b, Move("e1", "c1"));
 			
 			b.GetPieceAtPosition(new BoardPosition(7, 3)).PieceType.Should().Be(ChessPieceType.RookQueen,
 				 "Queen side rook should have moved right");
 			b.PositionIsEmpty(new BoardPosition(7, 4)).Should().BeTrue("King no longer where it was after castling");
 			b.GetPieceAtPosition(new BoardPosition(7, 2)).PieceType.Should().Be(ChessPieceType.King, "King should be to left of rook");
-			v.PrintView(Console.Out, b);
+			// v.PrintView(Console.Out, b);
 			b.UndoLastMove();
-			v.PrintView(Console.Out, b);
+			// v.PrintView(Console.Out, b);
 			b.GetPieceAtPosition(new BoardPosition(7, 4)).PieceType.Should().Be(ChessPieceType.King,
 				 "King should be returned to correct position after undoing castling");
 			b.GetPieceAtPosition(new BoardPosition(7, 0)).PieceType.Should().Be(ChessPieceType.RookQueen,
@@ -204,9 +204,9 @@ namespace Cecs475.BoardGames.Chess.Test {
 				 "King side rook should have moved left");
 			b.PositionIsEmpty(new BoardPosition(7, 4)).Should().BeTrue("King no longer where it was after castling");
 			b.GetPieceAtPosition(new BoardPosition(7, 6)).PieceType.Should().Be(ChessPieceType.King, "King should be to right of rook");
-			v.PrintView(Console.Out, b);
+			// v.PrintView(Console.Out, b);
 			b.UndoLastMove();
-			v.PrintView(Console.Out, b);
+			// v.PrintView(Console.Out, b);
 			b.GetPieceAtPosition(new BoardPosition(7, 4)).PieceType.Should().Be(ChessPieceType.King,
 				 "King should be returned to correct position after undoing castling");
 			b.GetPieceAtPosition(new BoardPosition(7, 0)).PieceType.Should().Be(ChessPieceType.RookQueen,
@@ -219,7 +219,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 				 Pos("h1"), ChessPieceType.RookKing, 1,
 				 Pos("b1"), ChessPieceType.Knight, 1,
 				 Pos("g1"), ChessPieceType.Knight, 1);
-
+			v.PrintView(Console.Out, b);
 			b.GetPossibleMoves().Should().NotContain(Move("e1", "c1"), "King should not be able to castle with king side rook with piece in the way")
 				 .And.NotContain(Move("e1", "g1"), "King should not be able to castle with queen side rook with piece in the way");
 		}
