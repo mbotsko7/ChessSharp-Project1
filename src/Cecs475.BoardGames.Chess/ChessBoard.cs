@@ -232,9 +232,14 @@ namespace Cecs475.BoardGames.Chess {
 		}
 
 		private List<ChessMove> EndangerKing(List<ChessMove> m, BoardPosition kp){
-			
+			//Console.WriteLine($"Into endanger {CurrentPlayer}");
 			for(int i = 0; i < m.Count; i++){
+				//bool flag = first;
+				//Console.WriteLine($"Move type is {m[i].ToString()} with pre-player of {CurrentPlayer}");
 				ApplyMove(m[i]);
+				// if(m[i].MoveType == ChessMoveType.PawnPromote)
+				// 	flag = true;
+
 				var threat = GetThreatenedPositions(CurrentPlayer) as List<BoardPosition>;
 				foreach(BoardPosition move in threat){
 
@@ -245,8 +250,10 @@ namespace Cecs475.BoardGames.Chess {
 					}
 				}
 				UndoLastMove();
-				
+				//Console.WriteLine($"Post player of  {CurrentPlayer}");
+				//first = flag;
 			}
+			//Console.WriteLine($"Out of endanger {CurrentPlayer}");
 			return m;
 
 		}
@@ -296,9 +303,10 @@ namespace Cecs475.BoardGames.Chess {
 		private bool check(){
 			BoardPosition k = findKing(CurrentPlayer);
 			List<BoardPosition> threat = GetThreatenedPositions(CurrentPlayer == 1?2:1) as List<BoardPosition>;
-			return doesContain(threat, k);
-
-
+			var x = GetPossibleMoves() as List<ChessMove>;
+			if(doesContain(threat, k) && x.Count > 0)
+				return true;
+			return false;
 		}
 		public bool IsCheckmate{
 			get {return checkmate();}
@@ -309,7 +317,9 @@ namespace Cecs475.BoardGames.Chess {
 		}
 		private bool checkmate(){
 			var x = GetPossibleMoves() as List<ChessMove>;
-			if(check() && x.Count == 0){
+			BoardPosition k = findKing(CurrentPlayer);
+			List<BoardPosition> threat = GetThreatenedPositions(CurrentPlayer == 1?2:1) as List<BoardPosition>;
+			if(threat.Contains(k) && x.Count == 0){
 				return true;
 			}
 			return false;
@@ -318,7 +328,9 @@ namespace Cecs475.BoardGames.Chess {
 		public bool IsStalemate{
 			get{
 				var x = GetPossibleMoves() as List<ChessMove>;
-				if(!check() && x.Count == 0){
+				BoardPosition k = findKing(CurrentPlayer);
+				List<BoardPosition> threat = GetThreatenedPositions(CurrentPlayer == 1?2:1) as List<BoardPosition>;
+				if(threat.Contains(k) == false && x.Count == 0){
 					return true;
 				}
 				return false;
@@ -688,7 +700,10 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
 			//change the player
-			
+			if(promotion){
+				promotion = false;
+				first = !first;
+			}
 			int player = first ? 1:-1;
 			if(m.MoveType == ChessMoveType.Normal){
 				//first move the position that moved
@@ -701,6 +716,7 @@ namespace Cecs475.BoardGames.Chess {
 					else
 						Value -= GetPieceValue(m.Captured.PieceType);
 				}
+				
 			}
 			else if(m.MoveType == ChessMoveType.EnPassant){
 				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));

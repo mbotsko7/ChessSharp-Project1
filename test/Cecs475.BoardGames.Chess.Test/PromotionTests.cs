@@ -259,12 +259,15 @@ namespace Cecs475.BoardGames.Chess.Test {
 				 Pos("h6"), ChessPieceType.Pawn, 2,
 				 Pos("h7"), ChessPieceType.King, 2
 			);
-
+			ChessView v = new ChessView();
+			v.PrintView(Console.Out, b);
+			Console.WriteLine($"Who's turn is it? {b.CurrentPlayer}");
 			var possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
+			Console.WriteLine($"Who's turn is it? {b.CurrentPlayer}");
 			var expectedMoves = GetMovesAtPosition(possMoves, Pos("a7"));
 			expectedMoves.Should().HaveCount(1, "There should only be one move.")
 				 .And.Contain(Move("a7", "a8"), "The only possible mve is a7 to a8.");
-            
+            Console.WriteLine($"Who's turn is it? {b.CurrentPlayer}");
 			b.CurrentPlayer.Should().Be(1, "Current player should be White.");
 
 			b.ApplyMove(Move("a7", "a8"));
@@ -326,6 +329,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 			pawnpromotion.PieceType.Should().Be(ChessPieceType.Queen, "White pawn should be Queen");
             v.PrintView(Console.Out, b);
 			possMoves = b.GetPossibleMoves() as IEnumerable<ChessMove>;
+			foreach(ChessMove x in possMoves){Console.WriteLine(x.ToString());}
 			possMoves.Should().HaveCount(3).And.NotContain(Move("a2", "a1"));
 			ApplyMove(b, Move("h8", "h7"));
 			ApplyMove(b, Move("d8", "c8"));
@@ -356,7 +360,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 			shouldBeQueen.Should().Be(ChessPieceType.Queen,
 				 "Pawn should have been promoted to queen");
 			b.IsCheck.Should().Be(true, "player 2 should be on check");// player 2 is in check
-            Console.WriteLine($"ayyy {b.MoveHistory.Count}");
+            //Console.WriteLine($"ayyy {b.MoveHistory.Count}");
             v.PrintView(Console.Out, b);
 
 			b.UndoLastMove(); //player 2 undoes
