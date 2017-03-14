@@ -95,8 +95,8 @@ namespace Cecs475.BoardGames.Chess {
 
 		public void ApplyMove(IGameMove move) {
 			
-			// ChessView v = new ChessView();
-			// v.PrintView(Console.Out, this);
+			ChessView v = new ChessView();
+			v.PrintView(Console.Out, this);
 			promotion = false;
 			ChessMove m = move as ChessMove;
 			if(move.Equals(new ChessMove(new BoardPosition(1,6), new BoardPosition(0, 7)))){
