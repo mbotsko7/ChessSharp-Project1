@@ -329,7 +329,7 @@ namespace Cecs475.BoardGames.Chess {
 		}
 
 		private List<ChessMove> EndangerKing(List<ChessMove> m, BoardPosition kp){
-
+			//why not
 			for(int i = 0; i < m.Count; i++){
 				//Console.WriteLine($"Before...The move is {m[i].ToString()} and the value is {Value} and type of {m[i].MoveType}");
 				bool before = first;
