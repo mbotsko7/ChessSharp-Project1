@@ -104,6 +104,7 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			if(m.MoveType == ChessMoveType.PawnPromote){
 				int player = CurrentPlayer == 1 ? 1 : -1;
+				Console.WriteLine($"Value is...{Value}");
 				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(m.EndPosition.Col*player);
 				if(GetPlayerAtPosition(m.StartPosition) == 1)
 					Value += GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
