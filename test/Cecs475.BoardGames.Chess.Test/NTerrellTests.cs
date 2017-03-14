@@ -9,13 +9,12 @@ namespace Cecs475.BoardGames.Chess.Test {
 		[Fact]
 		public void test1()
 		{
-		   ChessBoard b = CreateBoardWithPositions(Pos("h7"), ChessPieceType.Pawn, 1);
-		   ApplyMove(b, Move("h7,h8"));
-		   ApplyMove(b, Move("(h8, Queen)"));
-		   b.UndoLastMove();
+		   ChessBoard b = CreateBoardWithPositions(Pos("e1"), ChessPieceType.King, 1, Pos("h1"), ChessPieceType.RookKing, 1);
+		   ApplyMove(b, Move("e1,g1"));
 		   b.UndoLastMove();
 		   ChessView v = new ChessView();
 		   v.PrintView(Console.Out, b);
+		   
 		}
 		/// <summary>
 		/// Simple facts about "new" boards.

@@ -95,8 +95,6 @@ namespace Cecs475.BoardGames.Chess {
 
 		public void ApplyMove(IGameMove move) {
 			
-			ChessView v = new ChessView();
-			v.PrintView(Console.Out, this);
 			promotion = false;
 			ChessMove m = move as ChessMove;
 			if(move.Equals(new ChessMove(new BoardPosition(1,6), new BoardPosition(0, 7)))){
@@ -287,6 +285,7 @@ namespace Cecs475.BoardGames.Chess {
 			Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~");
 		}
 		public IEnumerable<IGameMove> GetPossibleMoves() {
+			printHistory();
 			if(promotion){
 				return GetPromotionMoves();
 			}
@@ -489,6 +488,7 @@ namespace Cecs475.BoardGames.Chess {
 			BoardPosition bp3 = new BoardPosition(side, 3);
 			BoardPosition bp5 = new BoardPosition(side, 5);
 			BoardPosition bp6 = new BoardPosition(side, 6);
+			//if all spaces empty, if two of the spaces are unthreatened, if king and rook have not moved, and king is unthreatened
 			if(PositionIsEmpty(bp1) && PositionIsEmpty(bp2) && PositionIsEmpty(bp3)
 				&& !doesContain(threat, bp2) && !doesContain(threat, bp3)
 				&& !hasMoved(kp) && !hasMoved(qRook) && !doesContain(threat, kp) && mBoard[side, 0] == (sbyte)(p*2)){
