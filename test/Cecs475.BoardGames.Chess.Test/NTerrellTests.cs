@@ -14,7 +14,7 @@ namespace Cecs475.BoardGames.Chess.Test {
 		   //b.UndoLastMove();
 		   ChessView v = new ChessView();
 		   v.PrintView(Console.Out, b);
-
+		   ChessMove x = b.MoveHistory[0] as ChessMove;
 		}
 		/// <summary>
 		/// Simple facts about "new" boards.

@@ -97,11 +97,9 @@ namespace Cecs475.BoardGames.Chess {
 			
 			promotion = false;
 			ChessMove m = move as ChessMove;
-			if(move.Equals(new ChessMove(new BoardPosition(1,6), new BoardPosition(0, 7)))){
-				Console.WriteLine(GetPieceAtPosition(new BoardPosition(1,6)).Player);
-			}
 			if(m.MoveType == ChessMoveType.PawnPromote){
 				int player = CurrentPlayer == 1 ? 1 : -1;
+				m.Piece = GetPieceAtPosition(m.StartPosition);
 				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(m.EndPosition.Col*player);
 				if(GetPlayerAtPosition(m.StartPosition) == 1)
 					Value += GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
@@ -111,6 +109,7 @@ namespace Cecs475.BoardGames.Chess {
 				//Console.WriteLine("ayy");
 			}
 			else if(m.MoveType == ChessMoveType.Normal && PositionIsEnemy(m.EndPosition, CurrentPlayer)){
+				m.Piece = GetPieceAtPosition(m.StartPosition);
 				m.Captured = GetPieceAtPosition(m.EndPosition);
 				if(m.Captured.Player == 1)
 					Value -= GetPieceValue(m.Captured.PieceType);
@@ -126,6 +125,7 @@ namespace Cecs475.BoardGames.Chess {
 					}
 			}
 			else if(m.MoveType == ChessMoveType.Normal && PositionIsEmpty(m.EndPosition)){
+				m.Piece = GetPieceAtPosition(m.StartPosition);
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
 				if(GetPieceAtPosition(m.EndPosition).PieceType == ChessPieceType.Pawn
@@ -154,6 +154,7 @@ namespace Cecs475.BoardGames.Chess {
 				SetPosition(rook, new ChessPiecePosition(ChessPieceType.Empty, 0));
 			}
 			else if(m.MoveType == ChessMoveType.EnPassant){
+				m.Piece = GetPieceAtPosition(m.StartPosition);
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
 				BoardPosition passing = new BoardPosition(m.EndPosition.Row + (first ? 1:-1), m.EndPosition.Col);
