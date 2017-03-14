@@ -94,8 +94,11 @@ namespace Cecs475.BoardGames.Chess {
 
 
 		public void ApplyMove(IGameMove move) {
+			ChessView v = new ChessView();
+			v.PrintView(Console.Out, this);
 			promotion = false;
 			ChessMove m = move as ChessMove;
+			Console.WriteLine($"Applying move {m.ToString()}");
 			//record MoveHistory
 			//implement move
 			//Console.WriteLine($"Move is {m.ToString()}");
@@ -179,6 +182,8 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
 			//change the player
+			Console.WriteLine($"Undoing move {m.ToString()}");
+			
 			if(promotion){
 				promotion = false;
 				first = !first;
