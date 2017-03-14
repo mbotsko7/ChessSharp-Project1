@@ -6,6 +6,14 @@ using System.Linq;
 
 namespace Cecs475.BoardGames.Chess.Test {
 	public class ExampleTests : ChessTests {
+		[Fact]
+		public void test1()
+		{
+		   ChessBoard b = CreateBoardWithPositions(Pos("h7"), ChessPieceType.Pawn, 1);
+		   ApplyMove(b, Move("h7,h8"));
+		   ApplyMove(b, Move("(h8, Rook)"));
+		   Console.WriteLine(b.Value);
+		}
 		/// <summary>
 		/// Simple facts about "new" boards.
 		/// </summary>

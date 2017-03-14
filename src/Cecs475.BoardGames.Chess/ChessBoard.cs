@@ -863,7 +863,7 @@ namespace Cecs475.BoardGames.Chess {
 				return 1;
 			else if(pieceType == ChessPieceType.Knight || pieceType == ChessPieceType.Bishop)
 				return 3;
-			else if(pieceType == ChessPieceType.RookKing || pieceType == ChessPieceType.RookQueen)
+			else if(pieceType == ChessPieceType.RookKing || pieceType == ChessPieceType.RookQueen || pieceType == ChessPieceType.RookPawn)
 				return 5;
 			else if(pieceType == ChessPieceType.Queen)
 				return 9;
