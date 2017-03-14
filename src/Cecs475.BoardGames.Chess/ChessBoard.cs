@@ -506,6 +506,7 @@ namespace Cecs475.BoardGames.Chess {
 				list.Add(c);
 			}
 			return list;
+			//jsldjfl
 		}
 
 		private List<ChessMove> KingPossible(BoardPosition pos){
