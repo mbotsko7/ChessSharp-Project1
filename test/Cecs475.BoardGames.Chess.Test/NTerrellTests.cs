@@ -11,8 +11,11 @@ namespace Cecs475.BoardGames.Chess.Test {
 		{
 		   ChessBoard b = CreateBoardWithPositions(Pos("h7"), ChessPieceType.Pawn, 1);
 		   ApplyMove(b, Move("h7,h8"));
-		   ApplyMove(b, Move("(h8, Rook)"));
-		   Console.WriteLine(b.Value);
+		   ApplyMove(b, Move("(h8, Queen)"));
+		   b.UndoLastMove();
+		   b.UndoLastMove();
+		   ChessView v = new ChessView();
+		   v.PrintView(Console.Out, b);
 		}
 		/// <summary>
 		/// Simple facts about "new" boards.

@@ -227,7 +227,7 @@ namespace Cecs475.BoardGames.Chess {
 				
 			}
 			else if(m.MoveType == ChessMoveType.PawnPromote){
-				first = !first;
+			    first = !first;
 				int p = CurrentPlayer == 1 ? 1 : -1;
 				if(GetPlayerAtPosition(m.StartPosition) == 1){
 						Value -= GetPieceValue(GetPieceAtPosition(m.StartPosition).PieceType);
@@ -237,7 +237,8 @@ namespace Cecs475.BoardGames.Chess {
 					}
 
 				Value += p;
-				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(player);
+				int positive = mBoard[m.StartPosition.Row, m.StartPosition.Col] > 0 ? 1 : -1;
+				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(1*positive);
 				//first = !first;
 				promotion = true;
 				MoveHistory.RemoveAt(MoveHistory.Count -1);
