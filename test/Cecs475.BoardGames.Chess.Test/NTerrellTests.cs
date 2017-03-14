@@ -11,10 +11,10 @@ namespace Cecs475.BoardGames.Chess.Test {
 		{
 		   ChessBoard b = CreateBoardWithPositions(Pos("e1"), ChessPieceType.King, 1, Pos("h1"), ChessPieceType.RookKing, 1);
 		   ApplyMove(b, Move("e1,g1"));
-		   b.UndoLastMove();
+		   //b.UndoLastMove();
 		   ChessView v = new ChessView();
 		   v.PrintView(Console.Out, b);
-		   
+
 		}
 		/// <summary>
 		/// Simple facts about "new" boards.

@@ -287,7 +287,7 @@ namespace Cecs475.BoardGames.Chess {
 			Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~");
 		}
 		public IEnumerable<IGameMove> GetPossibleMoves() {
-			printHistory();
+			// printHistory();
 			if(promotion){
 				return GetPromotionMoves();
 			}
@@ -497,12 +497,17 @@ namespace Cecs475.BoardGames.Chess {
 				//if not under threat
 				ChessMove c = new ChessMove(kp, bp2, ChessMoveType.CastleQueenSide);
 				c.Piece = GetPieceAtPosition(kp);
+				Console.WriteLine(c.Piece.Player.ToString());
+				// c.Piece.Player = GetPlayerAtPosition(kp);
+
 				list.Add(c);
 			}
 			if(PositionIsEmpty(bp5) && PositionIsEmpty(bp6) && !doesContain(threat, bp5) && !doesContain(threat, bp6)
 				&& !hasMoved(kp) && !hasMoved(kRook) && !doesContain(threat, kp) && mBoard[side, 7] == (sbyte)(p*3)){
 				ChessMove c = new ChessMove(kp, bp6, ChessMoveType.CastleKingSide);
+				
 				c.Piece = GetPieceAtPosition(kp);
+				Console.WriteLine(c.Piece.Player.ToString());
 				list.Add(c);
 			}
 			return list;
