@@ -207,7 +207,7 @@ namespace Cecs475.BoardGames.Chess {
 						Value += GetPieceValue(m.Captured.PieceType);
 					else
 						Value -= GetPieceValue(m.Captured.PieceType);
-
+						//jfsaljfd
 			}
 			else if(m.MoveType == ChessMoveType.CastleKingSide){
 				SetPosition(m.StartPosition, GetPieceAtPosition(m.EndPosition));
