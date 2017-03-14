@@ -138,6 +138,7 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			
 			else if(m.MoveType == ChessMoveType.CastleKingSide){
+				m.Piece = GetPieceAtPosition(m.StartPosition);
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
 				BoardPosition rook = new BoardPosition(CurrentPlayer == 1 ? 7 : 0, 7);
@@ -145,6 +146,7 @@ namespace Cecs475.BoardGames.Chess {
 				SetPosition(rook, new ChessPiecePosition(ChessPieceType.Empty, 0));
 			}
 			else if(m.MoveType == ChessMoveType.CastleQueenSide){
+				m.Piece = GetPieceAtPosition(m.StartPosition);
 				SetPosition(m.EndPosition, GetPieceAtPosition(m.StartPosition));
 				SetPosition(m.StartPosition, new ChessPiecePosition(ChessPieceType.Empty, 0));
 				BoardPosition rook = new BoardPosition(CurrentPlayer == 1 ? 7 : 0, 0);
