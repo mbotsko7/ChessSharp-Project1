@@ -94,16 +94,14 @@ namespace Cecs475.BoardGames.Chess {
 
 
 		public void ApplyMove(IGameMove move) {
-			ChessView v = new ChessView();
-			v.PrintView(Console.Out, this);
+			
+			// ChessView v = new ChessView();
+			// v.PrintView(Console.Out, this);
 			promotion = false;
 			ChessMove m = move as ChessMove;
-			Console.WriteLine($"Applying move {m.ToString()}");
-			//record MoveHistory
-			//implement move
-			//Console.WriteLine($"Move is {m.ToString()}");
-			//Console.WriteLine($"Start {m.StartPosition.Row}, {m.StartPosition.Col}");
-			//Console.WriteLine($"End {m.EndPosition.Row},{m.EndPosition.Col}, {m.MoveType}");
+			if(move.Equals(new ChessMove(new BoardPosition(1,6), new BoardPosition(0, 7)))){
+				Console.WriteLine(GetPieceAtPosition(new BoardPosition(1,6)).Player);
+			}
 			if(m.MoveType == ChessMoveType.PawnPromote){
 				int player = CurrentPlayer == 1 ? 1 : -1;
 				mBoard[m.StartPosition.Row, m.StartPosition.Col] = (sbyte)(m.EndPosition.Col*player);
@@ -182,7 +180,7 @@ namespace Cecs475.BoardGames.Chess {
 			}
 			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
 			//change the player
-			Console.WriteLine($"Undoing move {m.ToString()}");
+			// Console.WriteLine($"Undoing move {m.ToString()}");
 			
 			if(promotion){
 				promotion = false;
