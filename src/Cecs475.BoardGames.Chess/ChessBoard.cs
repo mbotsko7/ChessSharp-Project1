@@ -495,11 +495,15 @@ namespace Cecs475.BoardGames.Chess {
 				&& !doesContain(threat, bp2) && !doesContain(threat, bp3)
 				&& !hasMoved(kp) && !hasMoved(qRook) && !doesContain(threat, kp) && mBoard[side, 0] == (sbyte)(p*2)){
 				//if not under threat
-				list.Add(new ChessMove(kp, bp2, ChessMoveType.CastleQueenSide));
+				ChessMove c = new ChessMove(kp, bp2, ChessMoveType.CastleQueenSide);
+				c.Piece = GetPieceAtPosition(kp);
+				list.Add(c);
 			}
 			if(PositionIsEmpty(bp5) && PositionIsEmpty(bp6) && !doesContain(threat, bp5) && !doesContain(threat, bp6)
 				&& !hasMoved(kp) && !hasMoved(kRook) && !doesContain(threat, kp) && mBoard[side, 7] == (sbyte)(p*3)){
-				list.Add(new ChessMove(kp, bp6, ChessMoveType.CastleKingSide));
+				ChessMove c = new ChessMove(kp, bp6, ChessMoveType.CastleKingSide);
+				c.Piece = GetPieceAtPosition(kp);
+				list.Add(c);
 			}
 			return list;
 		}
