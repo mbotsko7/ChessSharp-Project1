@@ -174,7 +174,7 @@ namespace Cecs475.BoardGames.Chess {
 		public void UndoLastMove() {
 			// TODO: implement this method. Make sure to account for "special" moves.
 			if(MoveHistory.Count == 0){
-				return;
+				throw new InvalidOperationException("No moves to undo.\n");
 			}
 			ChessMove m = MoveHistory[MoveHistory.Count-1] as ChessMove;
 			//change the player
